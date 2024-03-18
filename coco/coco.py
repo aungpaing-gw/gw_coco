@@ -330,6 +330,27 @@ class VisPersonSkeleton:
         }
 
 
+class FolderPath:
+    def __init__(self, root_dir: str):
+        self.root_dir = root_dir
+        assert_file(root_dir)
+        self.file_index = self.__create_file_index()
+
+    def __create_file_index(self):
+        file_index = {}
+        for root, _, files in os.walk(self.root_dir):
+            if files:
+                for file in files:
+                    file_full_name = osp.join(root, file)
+                    file_base_name = osp.basename(file)
+                    assert_file(file_full_name)
+                    file_index[file_base_name] = file_full_name
+        return file_index
+
+    def __getitem__(self, file_base_name: str):
+        return self.file_index[file_base_name]
+
+
 class COCO:
     """COCO Class for accessing coco dataset
     Implementation inspired from pycocotools
@@ -535,12 +556,14 @@ class COCOVis:
         vis_txt_bg_color: bool = True,
         vis_txt_above_bbox: bool = False,
         vis_txt_attribute: List[str] = [],
+        vis_txt_attribute_value: bool = False,
         COLOR_PALETTE: List[List[int]] = COLOR_PALETTE,
         vis_txt_size: float = 0.5,
         vis_txt_thickness: int = 1,
     ):
         self.__coco = coco
         self.img_dir = img_dir
+        self.folder_path = FolderPath(self.img_dir)
         self.COLOR_PALETTE = COLOR_PALETTE
         self.vis_bbox = vis_bbox
         self.vis_kps = vis_kps
@@ -548,6 +571,7 @@ class COCOVis:
         self.vis_txt_bg_color = vis_txt_bg_color
         self.vis_txt_above_bbox = vis_txt_above_bbox
         self.vis_txt_attribute = vis_txt_attribute
+        self.vis_txt_attribute_value = vis_txt_attribute_value
         self.vis_person_skeleton = VisPersonSkeleton()
         self.__font = cv2.FONT_HERSHEY_SIMPLEX
         self.__txt_size = vis_txt_size
@@ -690,7 +714,8 @@ class COCOVis:
         annIds = self.__coco.getAnnIds(imgIds=imgId)
         img = self.__coco.loadImgs(imgIds=[imgId])[0]
         img_base_name = img["file_name"]
-        img_full_name = osp.join(self.img_dir, img_base_name)
+        # img_full_name = osp.join(self.img_dir, img_base_name)
+        img_full_name = self.folder_path[img_base_name]
         assert_file(img_full_name)
         img_arr = cv2.imread(img_full_name)
 
@@ -702,7 +727,10 @@ class COCOVis:
             if len(self.vis_txt_attribute):
                 for anno_attribute in self.vis_txt_attribute:
                     if anno["attributes"].get(anno_attribute):
-                        txt_append += anno_attribute[:4]
+                        if self.vis_txt_attribute_value:
+                            txt_append += f" {anno['attributes'].get(anno_attribute)}"
+                        else:
+                            txt_append += anno_attribute[:4]
 
             if self.vis_bbox:
                 img_arr = self._vis_bbox(img_arr, bbox, catId, txt_append)

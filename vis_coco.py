@@ -14,9 +14,9 @@ import cv2
 
 from coco.coco import COCO, COCOVis
 
-anno_file = f"/home/aung/Documents/tmp/json/second/instances_default.json"
-img_dir = f"/home/aung/Downloads/PJ_test/しゃがみ下"
-dst_dir = f"/home/aung/Downloads/PJ_test/vis"
+anno_file = f"/home/aung/Documents/projects/pj_112/annotations/1_1_b_140.json"
+img_dir = f"/home/aung/Documents/projects/pj_112/image/1_1_B"
+dst_dir = f"/home/aung/Documents/projects/pj_112/image/vis"
 
 os.makedirs(dst_dir, exist_ok=True)
 
@@ -25,7 +25,12 @@ vis_kps = False
 vis_txt_bg_color = True
 vis_txt_above_bbox = True
 vis_sample_count = True
-vis_txt_attribute = []
+vis_txt_attribute = ["Direction", "Occlusion"]
+vis_txt_attribute_value = (
+    True  # If True, will write value of attribute instead of attribute
+)
+
+sample_vis = 10
 
 
 def main():
@@ -41,20 +46,22 @@ def main():
         vis_txt_bg_color,
         vis_txt_above_bbox,
         vis_txt_attribute,
+        vis_txt_attribute_value,
     )
 
     imgIds = coco.getImgIds()
     imgIds = sorted(imgIds)
 
+    idx = 0
     for imgId in imgIds:
         img = coco.loadImgs(imgIds=imgId)[0]
         img_base_name = img["file_name"]
-        img_full_name = osp.join(img_dir, img_base_name)
         dst_full_name = osp.join(dst_dir, img_base_name)
-        if not os.path.exists(img_full_name):
-            continue
         img_arr = coco_vis.vis(imgId)
         cv2.imwrite(dst_full_name, img_arr)
+        idx += 1
+        if idx == sample_vis:
+            break
 
     # Get Total Sample counts
     sample_count = defaultdict(int)
