@@ -446,7 +446,10 @@ class AssertCOCO:
             img_base_name = img["file_name"]
             img_full_name = osp.join(img_dir, img_base_name)
             assert_file(img_full_name)
-            cv2.imread(img_full_name)
+            # Read Other lanugage file name in Window
+            cv2.imdecode(
+                np.fromfile(img_full_name, dtype=np.uint8), cv2.IMREAD_UNCHANGED
+            )
 
     def _assert_annotations_iou(self, iou_threshold=0.5):
         """Assert the IOU of the annotation in the images"""
@@ -717,7 +720,9 @@ class COCOVis:
         # img_full_name = osp.join(self.img_dir, img_base_name)
         img_full_name = self.folder_path[img_base_name]
         assert_file(img_full_name)
-        img_arr = cv2.imread(img_full_name)
+        img_arr = cv2.imdecode(
+            np.fromfile(img_full_name, dtype=np.uint8), cv2.IMREAD_UNCHANGED
+        )
 
         for annId in annIds:
             anno = self.__coco.loadAnns(annIds=[annId])[0]
