@@ -12,7 +12,8 @@ from collections import defaultdict
 
 import cv2
 
-from coco.coco import COCO, COCOVis
+from coco.coco import COCO
+from coco.coco_vis import COCOVis
 
 anno_file = f"/home/aung/Documents/projects/pj_112/annotations/1_1_b_140.json"
 img_dir = f"/home/aung/Documents/projects/pj_112/image/1_1_B"
@@ -29,6 +30,10 @@ vis_txt_attribute = ["Direction", "Occlusion"]
 vis_txt_attribute_value = (
     True  # If True, will write value of attribute instead of attribute
 )
+
+bbox_fill = False
+bbox_transparent = True
+bbox_dotted = True
 
 sample_vis = 10
 
@@ -47,6 +52,9 @@ def main():
         vis_txt_above_bbox,
         vis_txt_attribute,
         vis_txt_attribute_value,
+        vis_bbox_dotted=bbox_dotted,
+        vis_bbox_fill=bbox_fill,
+        vis_bbox_transparent=bbox_transparent,
     )
 
     imgIds = coco.getImgIds()
